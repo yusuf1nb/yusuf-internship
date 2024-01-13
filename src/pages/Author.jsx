@@ -2,35 +2,31 @@ import React, { useEffect, useState } from "react";
 import AuthorBanner from "../images/author_banner.jpg";
 import AuthorItems from "../components/author/AuthorItems";
 import { Link, useParams } from "react-router-dom";
-import Skeleton from "react-loading-skeleton";
-
 import axios from "axios";
-
+import Skeleton from "react-loading-skeleton";
+import SkeletonCard from "../components/UI/SkeletonCard";
 const Author = () => {
-  const { id } = useParams();
   const [authors, setAuthors] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isFollowing, setIsFollowing] = useState(false);
-
-  async function fetchAuthors() {
-    const res = await axios.get(
+  const { id } = useParams();
+  async function fetchData() {
+    setIsLoading(true);
+    const { data } = await axios.get(
       `https://us-central1-nft-cloud-functions.cloudfunctions.net/authors?author=${id}`
     );
-    const { data } = res;
     setAuthors(data);
     setIsLoading(false);
   }
-
   useEffect(() => {
-    fetchAuthors();
-  }, [id]);
-
+    window.scrollTo(0, 0);
+    fetchData();
+  }, []);
   function toggleFollow() {
     setIsFollowing(true);
     const followersCount = authors.followers;
     setAuthors({ ...authors, followers: followersCount + 1 });
   }
-
   function toggleUnfollow() {
     setIsFollowing(false);
     const followersCount = authors.followers;
@@ -40,15 +36,12 @@ const Author = () => {
     <div id="wrapper">
       <div className="no-bottom no-top" id="content">
         <div id="top"></div>
-
         <section
           id="profile_banner"
           aria-label="section"
           className="text-light"
           data-bgimage="url(images/author_banner.jpg) top"
-          style={{ background: `url(${AuthorBanner}) top` }}
-        ></section>
-
+          style={{ background: `url(${AuthorBanner}) top` }}></section>
         <section aria-label="section">
           <div className="container">
             <div className="row">
@@ -91,7 +84,6 @@ const Author = () => {
                     <div className="de-flex-col">
                       <div className="profile_avatar">
                         <img src={authors.authorImage} alt="" />
-
                         <i className="fa fa-check"></i>
                         <div className="profile_name">
                           <h4>
@@ -118,16 +110,14 @@ const Author = () => {
                           <Link
                             to="#"
                             className="btn-main"
-                            onClick={() => toggleUnfollow()}
-                          >
+                            onClick={() => toggleUnfollow()}>
                             Unfollow
                           </Link>
                         ) : (
                           <Link
                             to="#"
                             className="btn-main"
-                            onClick={() => toggleFollow()}
-                          >
+                            onClick={() => toggleFollow()}>
                             Follow
                           </Link>
                         )}
@@ -136,12 +126,17 @@ const Author = () => {
                   </div>
                 </div>
               )}
-
-              <div className="col-md-12">
-                <div className="de_tab tab_simple">
-                  <AuthorItems data={authors} />
+              {isLoading ? (
+                new Array(8)
+                  .fill(0)
+                  .map((_, index) => <SkeletonCard key={index} />)
+              ) : (
+                <div className="col-md-12">
+                  <div className="de_tab tab_simple">
+                    <AuthorItems data={authors} />
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         </section>
@@ -149,5 +144,3 @@ const Author = () => {
     </div>
   );
 };
-
-export default Author;
